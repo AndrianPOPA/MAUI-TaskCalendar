@@ -1,4 +1,9 @@
-﻿using Microsoft.Maui.Controls;
+﻿// <summary>
+// Main page of the application containing the UI logic for calendar and todo functionality.
+// Handles user interactions, data binding, and coordination between UI elements and view models.
+// </summary>
+
+using Microsoft.Maui.Controls;
 using Schdeuler.ViewModel;
 using Syncfusion.Maui.Core.Carousel;
 using Syncfusion.Maui.Core.Internals;
@@ -11,11 +16,26 @@ using System.Runtime.CompilerServices;
 
 namespace Schdeuler
 {
+    /// <summary>
+    /// Main page of the application that implements both calendar and todo functionality.
+    /// Manages UI state, user interactions, and data binding between views and view models.
+    /// </summary>
     public partial class MainPage : ContentPage, INotifyPropertyChanged
     {
+        /// <summary>
+        /// The currently selected appointment in the scheduler.
+        /// </summary>
         private SchedulerAppointment selectedAppointment;
 
+        /// <summary>
+        /// Flag indicating whether the calendar view is currently visible.
+        /// </summary>
         private bool _isCalendarVisible = true;
+
+        /// <summary>
+        /// Gets or sets whether the calendar view is visible.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public bool IsCalendarVisible
         {
             get => _isCalendarVisible;
@@ -29,7 +49,15 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Flag indicating whether the todo view is currently visible.
+        /// </summary>
         private bool _isTodoVisible = false;
+
+        /// <summary>
+        /// Gets or sets whether the todo view is visible.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public bool IsTodoVisible
         {
             get => _isTodoVisible;
@@ -43,31 +71,53 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Flag indicating whether the current input mode is for events (true) or tasks (false).
+        /// </summary>
         private bool _isEventMode = true; 
 
+        /// <summary>
+        /// Handles the event toggle button click, setting the input mode to event creation.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnEventToggleClicked(object sender, EventArgs e)
         {
             _isEventMode = true;
             UpdateToggleUI();
         }
 
+        /// <summary>
+        /// Handles the task toggle button click, setting the input mode to task creation.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnTaskToggleClicked(object sender, EventArgs e)
         {
             _isEventMode = false;
             UpdateToggleUI();
         }
 
-       
-
+        /// <summary>
+        /// Handles changes to the "has date" checkbox for tasks.
+        /// Shows or hides the date/time selection controls based on the checkbox state.
+        /// </summary>
+        /// <param name="sender">The checkbox that changed.</param>
+        /// <param name="e">Event arguments containing the new checked state.</param>
         private void OnHasDateCheckChanged(object sender, CheckedChangedEventArgs e)
         {
             taskDateTimeSection.IsVisible = e.Value;
         }
 
+        /// <summary>
+        /// Updates the UI elements of the event/task toggle buttons to reflect the current mode.
+        /// Changes button colors and visibility of date/time controls.
+        /// </summary>
         private void UpdateToggleUI()
         {
             if (_isEventMode)
             {
+                // Set UI for event mode
                 eventToggleButton.BackgroundColor = Colors.Orange;
                 eventToggleButton.TextColor = Colors.White;
                 taskToggleButton.BackgroundColor = Colors.LightGray;
@@ -81,7 +131,7 @@ namespace Schdeuler
             }
             else
             {
-                // Mod Task
+                // Set UI for task mode
                 eventToggleButton.BackgroundColor = Colors.LightGray;
                 eventToggleButton.TextColor = Colors.Black;
                 taskToggleButton.BackgroundColor = Colors.Orange;
@@ -96,8 +146,15 @@ namespace Schdeuler
             }
         }
 
-
+        /// <summary>
+        /// Background color for the calendar tab button.
+        /// </summary>
         private Color _calendarTabColor = Colors.DarkOrange;
+
+        /// <summary>
+        /// Gets or sets the background color for the calendar tab button.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public Color CalendarTabColor
         {
             get => _calendarTabColor;
@@ -111,7 +168,15 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Background color for the todo tab button.
+        /// </summary>
         private Color _todoTabColor = Colors.Orange;
+
+        /// <summary>
+        /// Gets or sets the background color for the todo tab button.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public Color TodoTabColor
         {
             get => _todoTabColor;
@@ -125,7 +190,15 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Collection of all todo events.
+        /// </summary>
         private ObservableCollection<TodoItem> _todoEvents = new ObservableCollection<TodoItem>();
+
+        /// <summary>
+        /// Gets or sets the collection of all todo events.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public ObservableCollection<TodoItem> TodoEvents
         {
             get => _todoEvents;
@@ -136,7 +209,15 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Collection of active (incomplete) todo events.
+        /// </summary>
         private ObservableCollection<TodoItem> _activeTodoEvents = new ObservableCollection<TodoItem>();
+
+        /// <summary>
+        /// Gets or sets the collection of active todo events.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public ObservableCollection<TodoItem> ActiveTodoEvents
         {
             get => _activeTodoEvents;
@@ -147,7 +228,15 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Collection of completed todo events.
+        /// </summary>
         private ObservableCollection<TodoItem> _completedTodoEvents = new ObservableCollection<TodoItem>();
+
+        /// <summary>
+        /// Gets or sets the collection of completed todo events.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public ObservableCollection<TodoItem> CompletedTodoEvents
         {
             get => _completedTodoEvents;
@@ -158,13 +247,21 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Service for managing todo item persistence.
+        /// </summary>
         private TodoService _todoService;
 
+        /// <summary>
+        /// Saves the current input as a new event.
+        /// Validates date/time constraints before saving.
+        /// </summary>
         private void SaveAsEvent()
         {
             var startDateTime = startDatePicker.Date + startTimePicker.Time;
             var endDateTime = endDatePicker.Date + endTimePicker.Time;
 
+            // Validate that end time is after start time
             if (endDateTime <= startDateTime)
             {
                 DisplayAlert("Eroare", "Data de sfârșit trebuie să fie după data de început", "OK");
@@ -176,21 +273,27 @@ namespace Schdeuler
                 endDateTime,
                 subjectEntry.Text,
                 GetRandomColor(), 
-                false,
-                true,  
-                true   
+                false,  // isCompleted
+                true,   // hasDate
+                true    // isEvent
             );
 
             subjectEntry.Text = string.Empty;
         }
 
+        /// <summary>
+        /// Saves the current input as a new task.
+        /// Handles both dated and dateless tasks based on user selection.
+        /// </summary>
         private void SaveAsTask()
         {
             if (hasDateCheckbox.IsChecked)
             {
+                // Handle dated task
                 var startDateTime = taskStartDatePicker.Date + taskStartTimePicker.Time;
                 var endDateTime = taskEndDatePicker.Date + taskEndTimePicker.Time;
 
+                // Validate that end time is after start time
                 if (endDateTime <= startDateTime)
                 {
                     DisplayAlert("Eroare", "Data de sfârșit trebuie să fie după data de început", "OK");
@@ -202,19 +305,24 @@ namespace Schdeuler
                     endDateTime,
                     subjectEntry.Text,
                     GetRandomColor(),
-                    false, 
-                    true, 
-                    false 
+                    false, // isCompleted
+                    true,  // hasDate
+                    false  // isEvent
                 );
             }
             else
             {
+                // Handle dateless task
                 viewModel.AddTaskWithoutDate(subjectEntry.Text);
             }
 
             subjectEntry.Text = string.Empty;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainPage"/> class.
+        /// Sets up the UI, data binding, and initial state.
+        /// </summary>
         public MainPage()
         {
             InitializeComponent();
@@ -229,11 +337,15 @@ namespace Schdeuler
             endDatePicker.Date = now.Date;
             endTimePicker.Time = new TimeSpan(now.Hour + 1, now.Minute, 0);
 
+            // Load todo events when scheduler is ready
             scheduler.Loaded += (s, e) => LoadTodoEvents();
 
             scheduler.AllowAppointmentDrag = true;
         }
 
+        /// <summary>
+        /// Loads todo events from the view model and organizes them into active and completed collections.
+        /// </summary>
         private void LoadTodoEvents()
         {
             TodoEvents.Clear();
@@ -257,6 +369,11 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Handles the calendar tab button click, switching to calendar view.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnCalendarTabClicked(object sender, EventArgs e)
         {
             IsCalendarVisible = true;
@@ -265,6 +382,11 @@ namespace Schdeuler
             TodoTabColor = Colors.Orange;
         }
 
+        /// <summary>
+        /// Handles the todo tab button click, switching to todo view.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnTodoTabClicked(object sender, EventArgs e)
         {
             IsCalendarVisible = false;
@@ -274,6 +396,11 @@ namespace Schdeuler
             LoadTodoEvents(); 
         }
 
+        /// <summary>
+        /// Handles the add event/task button click, showing the input popup.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnAddEventClicked(object sender, EventArgs e)
         {
             _isEventMode = true;
@@ -297,19 +424,31 @@ namespace Schdeuler
             eventPopup.IsVisible = true;
         }
 
+        /// <summary>
+        /// Handles the cancel button click in the add event popup, hiding the popup.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnCancelClicked(object sender, EventArgs e)
         {
             eventPopup.IsVisible = false;
         }
 
+        /// <summary>
+        /// Handles the save button click in the add event popup, validating input and saving the event/task.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnSaveEventClicked(object sender, EventArgs e)
         {
+            // Validate that subject is not empty
             if (string.IsNullOrWhiteSpace(subjectEntry.Text))
             {
                 DisplayAlert("Eroare", "Introduceți un subiect", "OK");
                 return;
             }
 
+            // Save as event or task based on current mode
             if (_isEventMode)
             {
                 SaveAsEvent();
@@ -322,14 +461,21 @@ namespace Schdeuler
             eventPopup.IsVisible = false;
         }
 
+        /// <summary>
+        /// Handles taps on scheduler appointments, showing the edit popup for the selected appointment.
+        /// </summary>
+        /// <param name="sender">The scheduler control.</param>
+        /// <param name="e">Event arguments containing information about the tap.</param>
         private void OnSchedulerTapped(object sender, Syncfusion.Maui.Scheduler.SchedulerTappedEventArgs e)
         {
+            // Check if an appointment was tapped
             if (e.Appointments != null && e.Appointments.Count > 0)
             {
                 selectedAppointment = e.Appointments[0] as SchedulerAppointment;
 
                 if (selectedAppointment != null)
                 {
+                    // Populate edit popup with appointment data
                     editSubjectEntry.Text = selectedAppointment.Subject;
 
                     editStartDatePicker.Date = selectedAppointment.StartTime.Date;
@@ -343,13 +489,24 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Handles the cancel button click in the edit event popup, hiding the popup.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnCancelEditClicked(object sender, EventArgs e)
         {
             editEventPopup.IsVisible = false;
         }
 
+        /// <summary>
+        /// Handles the update button click in the edit event popup, validating input and updating the appointment.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private void OnUpdateEventClicked(object sender, EventArgs e)
         {
+            // Validate that subject is not empty
             if (string.IsNullOrWhiteSpace(editSubjectEntry.Text))
             {
                 DisplayAlert("Eroare", "Introduceți un subiect pentru eveniment", "OK");
@@ -359,12 +516,14 @@ namespace Schdeuler
             var startDateTime = editStartDatePicker.Date + editStartTimePicker.Time;
             var endDateTime = editEndDatePicker.Date + editEndTimePicker.Time;
 
+            // Validate that end time is after start time
             if (endDateTime <= startDateTime)
             {
                 DisplayAlert("Eroare", "Data de sfârșit trebuie să fie după data de început", "OK");
                 return;
             }
 
+            // Update the appointment if one is selected
             if (selectedAppointment != null)
             {
                 if (selectedAppointment.Background is SolidColorBrush solidColorBrush)
@@ -395,8 +554,14 @@ namespace Schdeuler
             editEventPopup.IsVisible = false;
         }
 
+        /// <summary>
+        /// Handles the delete button click in the edit event popup, confirming and deleting the appointment.
+        /// </summary>
+        /// <param name="sender">The button that was clicked.</param>
+        /// <param name="e">Event arguments.</param>
         private async void OnDeleteEventClicked(object sender, EventArgs e)
         {
+            // Confirm deletion with user
             bool answer = await DisplayAlert("Confirmare", "Sunteți sigur că doriți să ștergeți acest eveniment?", "Da", "Nu");
 
             if (answer && selectedAppointment != null)
@@ -409,16 +574,23 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Updates a todo item to match the properties of a scheduler appointment.
+        /// </summary>
+        /// <param name="appointment">The appointment to update from.</param>
+        /// <param name="oldSubject">The previous subject of the appointment.</param>
         private void UpdateTodoItem(SchedulerAppointment appointment, string oldSubject)
         {
             foreach (var todoItem in TodoEvents)
             {
+                // Find the matching todo item
                 if ((string.IsNullOrEmpty(oldSubject) && todoItem.AppointmentId == appointment.Id?.ToString()) ||
                     (!string.IsNullOrEmpty(oldSubject) && todoItem.Subject == oldSubject))
                 {
                     bool wasCompleted = todoItem.IsCompleted;
                     todoItem.UpdateFromAppointment(appointment);
 
+                    // Move item between active and completed collections if completion status changed
                     if (wasCompleted && !CompletedTodoEvents.Contains(todoItem))
                     {
                         ActiveTodoEvents.Remove(todoItem);
@@ -436,11 +608,17 @@ namespace Schdeuler
 
             _todoService.SaveTodoItems(TodoEvents);
         }
+
+        /// <summary>
+        /// Removes a todo item that corresponds to a deleted scheduler appointment.
+        /// </summary>
+        /// <param name="appointment">The appointment that was deleted.</param>
         private void RemoveTodoItem(SchedulerAppointment appointment)
         {
             string appointmentId = appointment.Id?.ToString();
             TodoItem itemToRemove = null;
 
+            // Find the todo item to remove
             foreach (var todoItem in TodoEvents)
             {
                 if (todoItem.AppointmentId == appointmentId)
@@ -450,6 +628,7 @@ namespace Schdeuler
                 }
             }
 
+            // Remove the item from all collections
             if (itemToRemove != null)
             {
                 TodoEvents.Remove(itemToRemove);
@@ -468,6 +647,11 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Handles changes to todo item completion checkboxes, updating the item's status and moving it between collections.
+        /// </summary>
+        /// <param name="sender">The checkbox that changed.</param>
+        /// <param name="e">Event arguments containing the new checked state.</param>
         private void OnTodoItemCheckedChanged(object sender, CheckedChangedEventArgs e)
         {
             if (sender is CheckBox checkBox && checkBox.BindingContext is TodoItem todoItem)
@@ -476,6 +660,7 @@ namespace Schdeuler
 
                 viewModel.UpdateEventProperties(todoItem.AppointmentId, e.Value, todoItem.HasDate, todoItem.IsEvent);
 
+                // Move item between active and completed collections based on new status
                 if (e.Value)
                 {
                     if (ActiveTodoEvents.Contains(todoItem))
@@ -495,6 +680,10 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Gets a random color from a predefined set of colors.
+        /// </summary>
+        /// <returns>A randomly selected color.</returns>
         private Color GetRandomColor()
         {
             var random = new Random();
@@ -511,24 +700,68 @@ namespace Schdeuler
             return colors[random.Next(colors.Count)];
         }
 
+        /// <summary>
+        /// Event raised when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// Raises the PropertyChanged event.
+        /// </summary>
+        /// <param name="propertyName">The name of the property that changed.</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
+    /// <summary>
+    /// Represents a todo item that can be displayed in the todo list.
+    /// Implements INotifyPropertyChanged to support data binding.
+    /// </summary>
     public class TodoItem : INotifyPropertyChanged
     {
+        /// <summary>
+        /// Gets or sets the ID of the associated appointment.
+        /// </summary>
         public string AppointmentId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the subject/title of the todo item.
+        /// </summary>
         public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start time of the todo item.
+        /// </summary>
         public DateTime StartTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end time of the todo item.
+        /// </summary>
         public DateTime EndTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the todo item has an associated date.
+        /// Default is true to maintain backward compatibility.
+        /// </summary>
         public bool HasDate { get; set; } = true; 
+
+        /// <summary>
+        /// Gets or sets whether the todo item is an event (true) or task (false).
+        /// Default is false since this is specifically a todo item.
+        /// </summary>
         public bool IsEvent { get; set; } = false;
 
+        /// <summary>
+        /// Flag indicating whether the todo item is completed.
+        /// </summary>
         private bool _isCompleted;
+
+        /// <summary>
+        /// Gets or sets whether the todo item is completed.
+        /// Notifies listeners when the value changes.
+        /// </summary>
         public bool IsCompleted
         {
             get => _isCompleted;
@@ -542,6 +775,10 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Gets a formatted string representing the date and time information.
+        /// Shows "Fără dată" for dateless items or formatted date/time for dated items.
+        /// </summary>
         public string DateTimeInfo
         {
             get
@@ -552,10 +789,18 @@ namespace Schdeuler
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TodoItem"/> class.
+        /// </summary>
         public TodoItem()
         {
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TodoItem"/> class from a scheduler appointment.
+        /// </summary>
+        /// <param name="appointment">The appointment to create the todo item from.</param>
+        /// <param name="isEvent">Whether the item is an event (true) or task (false).</param>
         public TodoItem(SchedulerAppointment appointment, bool isEvent = true)
         {
             AppointmentId = appointment.Id?.ToString();
@@ -567,6 +812,10 @@ namespace Schdeuler
             IsEvent = isEvent; 
         }
 
+        /// <summary>
+        /// Updates this todo item with properties from a scheduler appointment.
+        /// </summary>
+        /// <param name="appointment">The appointment to update from.</param>
         public void UpdateFromAppointment(SchedulerAppointment appointment)
         {
             Subject = appointment.Subject;
@@ -580,12 +829,24 @@ namespace Schdeuler
             OnPropertyChanged(nameof(HasDate));
         }
 
+        /// <summary>
+        /// Event raised when a property value changes.
+        /// </summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// Raises the PropertyChanged event.
+        /// </summary>
+        /// <param name="propertyName">The name of the property that changed.</param>
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        /// <summary>
+        /// Updates this todo item with properties from a task appointment.
+        /// </summary>
+        /// <param name="appointment">The appointment to update from.</param>
         public void UpdateFromTask(SchedulerAppointment appointment)
         {
             Subject = appointment.Subject;

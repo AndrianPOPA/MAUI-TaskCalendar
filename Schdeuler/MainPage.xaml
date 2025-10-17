@@ -1,24 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+<!-- 
+ MainPage.xaml
+ 
+ This is the main user interface file for the MAUI Task Calendar application.
+ It defines the layout and UI elements for both the calendar and todo list functionality.
+ 
+ The UI is organized into:
+ - Tab navigation (Calendar/To Do)
+ - Calendar view with Syncfusion Scheduler
+ - To Do list view with active/completed tasks
+ - Popup dialogs for adding/editing events and tasks
+-->
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Schdeuler.MainPage"
              xmlns:scheduler="clr-namespace:Syncfusion.Maui.Scheduler;assembly=Syncfusion.Maui.Scheduler"
              xmlns:local="clr-namespace:Schdeuler">
 
+    <!-- Main layout grid with two rows: tabs and content -->
     <Grid>
         <Grid.RowDefinitions>
+            <!-- Row for tab navigation -->
             <RowDefinition Height="Auto"/>
+            <!-- Row for main content area -->
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Tab layout -->
+        <!-- Tab layout for switching between Calendar and To Do views -->
         <Grid Grid.Row="0" BackgroundColor="Orange">
             <Grid.ColumnDefinitions>
+                <!-- Two equal columns for the two tabs -->
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Calendar Tab -->
+            <!-- Calendar Tab Button -->
             <Button x:Name="calendarTab" 
                     Grid.Column="0"
                     Text="Calendar" 
@@ -26,7 +42,7 @@
                     TextColor="White"
                     Clicked="OnCalendarTabClicked"/>
 
-            <!-- To Do Tab -->
+            <!-- To Do Tab Button -->
             <Button x:Name="todoTab" 
                     Grid.Column="1"
                     Text="To Do" 
@@ -37,23 +53,25 @@
 
         <!-- Content area that changes based on selected tab -->
         <Grid Grid.Row="1">
-            <!-- Calendar View -->
+            <!-- Calendar View - Visible when IsCalendarVisible is true -->
             <Grid x:Name="calendarView" IsVisible="{Binding IsCalendarVisible}">
-                <!-- Scheduler principal -->
+                <!-- Syncfusion Scheduler control for displaying calendar events -->
                 <scheduler:SfScheduler x:Name="scheduler" 
                                    View="Week"
                                    AppointmentsSource="{Binding SchedulerEventsWithDates}"
                                    Tapped="OnSchedulerTapped">
+                    <!-- Configure the day view with custom time interval height -->
                     <scheduler:SfScheduler.DaysView>
                         <scheduler:SchedulerDaysView       
                                TimeIntervalHeight="40"/>
                     </scheduler:SfScheduler.DaysView>
+                    <!-- Bind the scheduler to the ControlViewModel -->
                     <scheduler:SfScheduler.BindingContext>
                         <local:ControlViewModel x:Name="viewModel"></local:ControlViewModel>
                     </scheduler:SfScheduler.BindingContext>
                 </scheduler:SfScheduler>
 
-                <!-- Buton flotant for new event -->
+                <!-- Floating action button for adding new events -->
                 <Button Text="+"
                         FontSize="24"
                         HeightRequest="60"
@@ -67,23 +85,26 @@
                         Clicked="OnAddEventClicked"/>
             </Grid>
 
-            <!-- To Do View -->
+            <!-- To Do View - Visible when IsTodoVisible is true -->
             <Grid x:Name="todoView" IsVisible="{Binding IsTodoVisible}">
                 <ScrollView>
                     <VerticalStackLayout Spacing="10" Padding="10">
-                        <!-- Ongoing Taaks-->
+                        <!-- Frame for active (incomplete) tasks -->
                         <Frame BackgroundColor="#FFF8F0" Padding="10" Margin="0,0,0,10">
                             <VerticalStackLayout>
+                                <!-- Header for active tasks section -->
                                 <Label Text="În desfășurare" 
                                        FontSize="18" 
                                        FontAttributes="Bold" 
                                        Margin="0,0,0,10"
                                        TextColor="DarkOrange"/>
 
+                                <!-- Collection view for active tasks -->
                                 <CollectionView ItemsSource="{Binding ActiveTodoEvents}"
                                 EmptyView="Nu există taskuri în desfășurare">
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate>
+                                            <!-- Layout for individual task items -->
                                             <Grid Padding="10" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
@@ -96,12 +117,15 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
 
+                                                <!-- Task subject -->
                                                 <Label Grid.Column="0" Grid.Row="0" 
                                                        Text="{Binding Subject}" 
                                                        FontAttributes="Bold"/>
+                                                <!-- Task date/time and type information -->
                                                 <StackLayout Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Spacing="5">
                                                     <Label Text="{Binding DateTimeInfo}" 
                                                            FontSize="Small">
+                                                        <!-- Style changes for dateless tasks -->
                                                         <Label.Triggers>
                                                             <DataTrigger TargetType="Label" 
                                                                         Binding="{Binding HasDate}" 
@@ -115,6 +139,7 @@
                                                     <Label Text="Task" 
                                                            FontSize="Small" 
                                                            TextColor="Gray">
+                                                        <!-- Show "Event" for events, "Task" for tasks -->
                                                         <Label.Triggers>
                                                             <DataTrigger TargetType="Label" 
                                                                         Binding="{Binding IsEvent}" 
@@ -125,6 +150,7 @@
                                                         </Label.Triggers>
                                                     </Label>
                                                 </StackLayout>
+                                                <!-- Checkbox for marking task as completed -->
                                                 <CheckBox Grid.Column="2" Grid.RowSpan="2" 
                                                           IsChecked="{Binding IsCompleted}"
                                                           CheckedChanged="OnTodoItemCheckedChanged"/>
@@ -135,19 +161,22 @@
                             </VerticalStackLayout>
                         </Frame>
 
-                        <!-- Finished tasks -->
+                        <!-- Frame for completed tasks -->
                         <Frame BackgroundColor="#F0F0F0" Padding="10">
                             <VerticalStackLayout>
+                                <!-- Header for completed tasks section -->
                                 <Label Text="Terminate" 
                                        FontSize="18" 
                                        FontAttributes="Bold" 
                                        Margin="0,0,0,10"
                                        TextColor="Gray"/>
 
+                                <!-- Collection view for completed tasks -->
                                 <CollectionView ItemsSource="{Binding CompletedTodoEvents}"
                                     EmptyView="Nu există taskuri terminate">
                                     <CollectionView.ItemTemplate>
                                         <DataTemplate>
+                                            <!-- Layout for individual completed task items -->
                                             <Grid Padding="10" Margin="0,3">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
@@ -159,15 +188,18 @@
                                                     <RowDefinition Height="Auto"/>
                                                 </Grid.RowDefinitions>
 
+                                                <!-- Task subject with strikethrough for completed tasks -->
                                                 <Label Grid.Column="0" Grid.Row="0" 
                                                        Text="{Binding Subject}" 
                                                        FontAttributes="Bold"
                                                        TextColor="Gray"
                                                        TextDecorations="Strikethrough"/>
+                                                <!-- Task date/time and type information -->
                                                 <StackLayout Grid.Column="0" Grid.Row="1" Orientation="Horizontal" Spacing="5">
                                                     <Label Text="{Binding DateTimeInfo}" 
                                                            FontSize="Small"
                                                            TextColor="Gray">
+                                                        <!-- Style changes for dateless tasks -->
                                                         <Label.Triggers>
                                                             <DataTrigger TargetType="Label" 
                                                                         Binding="{Binding HasDate}" 
@@ -180,6 +212,7 @@
                                                     <Label Text="Task" 
                                                            FontSize="Small" 
                                                            TextColor="Gray">
+                                                        <!-- Show "Event" for events, "Task" for tasks -->
                                                         <Label.Triggers>
                                                             <DataTrigger TargetType="Label" 
                                                                         Binding="{Binding IsEvent}" 
@@ -189,6 +222,7 @@
                                                         </Label.Triggers>
                                                     </Label>
                                                 </StackLayout>
+                                                <!-- Checkbox for marking task as active (uncompleted) -->
                                                 <CheckBox Grid.Column="2" Grid.RowSpan="2" 
                           IsChecked="{Binding IsCompleted}"
                           CheckedChanged="OnTodoItemCheckedChanged"/>
@@ -201,7 +235,7 @@
                     </VerticalStackLayout>
                 </ScrollView>
 
-                <!-- Buton flotant for new task -->
+                <!-- Floating action button for adding new tasks -->
                 <Button Text="+"
                         FontSize="24"
                         HeightRequest="60"
@@ -216,7 +250,7 @@
             </Grid>
         </Grid>
 
-        <!-- Popup for new event -->
+        <!-- Popup dialog for adding new events or tasks -->
         <Border x:Name="eventPopup"
             IsVisible="False"
             BackgroundColor="White"
@@ -242,6 +276,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- Popup header with title and close button -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -269,7 +304,7 @@
                         Clicked="OnCancelClicked"/>
                 </Grid>
 
-                <!-- Toggle for Event and Task -->
+                <!-- Toggle buttons for switching between Event and Task mode -->
                 <HorizontalStackLayout Grid.Row="1" Spacing="10" HorizontalOptions="Center">
                     <Button x:Name="eventToggleButton"
                         Text="Eveniment" 
@@ -286,12 +321,14 @@
                         Clicked="OnTaskToggleClicked"/>
                 </HorizontalStackLayout>
 
+                <!-- Subject input field -->
                 <Label Text="Subiect:" 
                    Grid.Row="2"/>
                 <Entry x:Name="subjectEntry" 
                    Placeholder="Introduceți subiectul"
                    Grid.Row="3"/>
 
+                <!-- Date/time selection for events -->
                 <StackLayout x:Name="dateTimeSection" Grid.Row="4" Grid.RowSpan="4">
                     <Label Text="Data și ora de început:" />
                     <HorizontalStackLayout Spacing="10">
@@ -311,6 +348,7 @@
                     </HorizontalStackLayout>
                 </StackLayout>
 
+                <!-- Checkbox for tasks that can optionally have dates -->
                 <CheckBox x:Name="hasDateCheckbox" 
                       Grid.Row="4"
                       IsVisible="False"
@@ -322,6 +360,7 @@
                    IsVisible="False"
                    x:Name="hasDateLabel"/>
 
+                <!-- Date/time selection for tasks (when hasDate is checked) -->
                 <StackLayout x:Name="taskDateTimeSection" 
                          Grid.Row="5" 
                          Grid.RowSpan="3" 
@@ -344,6 +383,7 @@
                     </HorizontalStackLayout>
                 </StackLayout>
 
+                <!-- Save button -->
                 <Button Grid.Row="8" 
                     Text="Salvează" 
                     BackgroundColor="Orange"
@@ -354,6 +394,7 @@
             </Grid>
         </Border>
 
+        <!-- Popup dialog for editing existing events -->
         <Border x:Name="editEventPopup"
                 IsVisible="False"
                 BackgroundColor="White"
@@ -378,6 +419,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- Popup header with title and close button -->
                 <Grid Grid.Row="0" Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -405,12 +447,14 @@
                            Clicked="OnCancelEditClicked"/>
                 </Grid>
 
+                <!-- Subject input field -->
                 <Label Text="Subiect:" 
                        Grid.Row="1"/>
                 <Entry x:Name="editSubjectEntry" 
                        Placeholder="Introduceți subiectul"
                        Grid.Row="2"/>
 
+                <!-- Start date/time selection -->
                 <Label Text="Data și ora de început:" 
                        Grid.Row="3"/>
                 <HorizontalStackLayout Grid.Row="4" Spacing="10">
@@ -420,6 +464,7 @@
                                 HorizontalOptions="End"/>
                 </HorizontalStackLayout>
 
+                <!-- End date/time selection -->
                 <Label Text="Data și ora de sfârșit:" 
                        Grid.Row="5"/>
                 <HorizontalStackLayout Grid.Row="6" Spacing="10">
@@ -429,6 +474,7 @@
                                 HorizontalOptions="End"/>
                 </HorizontalStackLayout>
 
+                <!-- Action buttons: Delete and Update -->
                 <Grid Grid.Row="7" Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
